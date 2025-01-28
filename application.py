@@ -12,7 +12,7 @@ if target_column not in df.columns:
 X = df.drop(target_column, axis=1)
 y = df[target_column]
 non_numeric_columns = X.select_dtypes(exclude=["number"]).columns
- st.write("**Name: Amad Khan  ID: F2021266440**")
+st.write("**Name: Amad Khan  ID: F2021266440**")
 if len(non_numeric_columns) > 0:
     st.write(f"Non-numeric columns: {non_numeric_columns}")
     X = X.drop(non_numeric_columns, axis=1)
