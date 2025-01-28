@@ -21,6 +21,13 @@ if target_column not in df.columns:
 X = df.drop(target_column, axis=1)
 y = df[target_column]
 
+# Check for non-numeric columns and handle them
+non_numeric_columns = X.select_dtypes(exclude=["number"]).columns
+if len(non_numeric_columns) > 0:
+    st.write(f"Non-numeric columns: {non_numeric_columns}")
+    # Optionally, you can drop or encode these columns
+    X = X.drop(non_numeric_columns, axis=1)  # Dropping non-numeric columns
+
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
