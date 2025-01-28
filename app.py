@@ -1,42 +1,64 @@
-code = """
-# Copy and paste the Streamlit app code here
 import streamlit as st
-import numpy as np
 import pandas as pd
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-# Title of the application
+# Load dataset
+data_url = "https://raw.githubusercontent.com/amadkhan1/app/refs/heads/main/User_Data.csv"
+df = pd.read_csv(data_url)
+
+# Preprocess data
+X = df.drop("class", axis=1)
+y = df["class"]
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# Train SVM model
+model = SVC(kernel='rbf', C=1.0, gamma='scale')
+model.fit(X_train, y_train)
+
+# Streamlit app
 st.title("SVM Prediction App")
+st.write("This app predicts the class using a pre-trained SVM model.")
 
-@st.cache_data
-def train_svm_model():
-    df = pd.read_csv('/content/User_Data.csv')  # Replace with your dataset
-    X = df.drop(columns=['Purchased'])  # Adjust the target column name
-    y = df['Purchased']
-    model = SVC(kernel='rbf', gamma='scale', C=1.0)
-    model.fit(X, y)
-    return model, X.columns
+# User input form
+st.sidebar.header("User Input Features")
+def user_input_features():
+    inputs = {}
+    for feature in X.columns:
+        inputs[feature] = st.sidebar.number_input(f"{feature}", float(df[feature].min()), float(df[feature].max()), float(df[feature].mean()))
+    return pd.DataFrame(inputs, index=[0])
 
-model, feature_names = train_svm_model()
+input_df = user_input_features()
 
-st.header("Enter Data for Prediction")
-user_input = {}
-for feature in feature_names:
-    user_input[feature] = st.number_input(f"Enter {feature}:", value=0.0)
+# Display user input
+st.subheader("User Input")
+st.write(input_df)
 
-input_data = np.array([list(user_input.values())]).reshape(1, -1)
+# Prediction
 if st.button("Predict"):
-    prediction = model.predict(input_data)
-    if prediction[0] == 1:
-        st.success("Prediction: Purchased")
-    else:
-        st.error("Prediction: Not Purchased")
+    input_scaled = scaler.transform(input_df)
+    prediction = model.predict(input_scaled)
 
-if st.checkbox("Show Model Accuracy"):
-    st.write("Training Accuracy:", accuracy_score(y, model.predict(X)))
-"""
+    # Display prediction
+    st.subheader("Prediction")
+    st.write(f"Predicted class: {prediction[0]}")
 
-with open('app.py', 'w') as f:
-    f.write(code)
-print("Streamlit app file 'app.py' created!")
+    # Evaluate model
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred, average='weighted')
+    recall = recall_score(y_test, y_pred, average='weighted')
+    f1 = f1_score(y_test, y_pred, average='weighted')
+
+    st.subheader("Model Performance on Test Data")
+    st.write(f"Accuracy: {accuracy:.2f}")
+    st.write(f"Precision: {precision:.2f}")
+    st.write(f"Recall: {recall:.2f}")
+    st.write(f"F1 Score: {f1:.2f}")
