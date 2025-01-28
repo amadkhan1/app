@@ -61,9 +61,12 @@ if st.button("Predict"):
     input_scaled = scaler.transform(input_df)
     prediction = model.predict(input_scaled)
 
-    # Display prediction
+    # Display prediction with a more intuitive message
     st.subheader("Prediction")
-    st.write(f"Predicted class: {prediction[0]}")
+    if prediction[0] == 0:
+        st.write("The model predicts that you are **not likely to make a purchase**.")
+    else:
+        st.write("The model predicts that you are **likely to make a purchase**.")
 
     # Evaluate model
     y_pred = model.predict(X_test)
