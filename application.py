@@ -9,9 +9,17 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 data_url = "https://raw.githubusercontent.com/amadkhan1/app/refs/heads/main/User_Data.csv"
 df = pd.read_csv(data_url)
 
+# Check column names to ensure correct target column is used
+st.write("Column Names in Dataset:", df.columns)
+
 # Preprocess data
-X = df.drop("class", axis=1)
-y = df["class"]
+# Dynamically check for the target column name
+target_column = "class"  # Default to 'class', but this can be adjusted
+if target_column not in df.columns:
+    target_column = df.columns[-1]  # Use the last column as target if 'class' is not present
+
+X = df.drop(target_column, axis=1)
+y = df[target_column]
 
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
